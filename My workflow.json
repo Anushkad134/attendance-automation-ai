@@ -1,0 +1,299 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -80,
+        -160
+      ],
+      "id": "f194153e-f9f6-4076-a01f-c05634a0428b",
+      "name": "Telegram Trigger",
+      "webhookId": "2b3634b7-263e-4c74-afd5-3097f144b910",
+      "credentials": {
+        "telegramApi": {
+          "id": "ymrXmW3RCPH5jzF0",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a83ae898-03a4-41f0-8abf-8c8aad2767df",
+              "name": "RollNo",
+              "value": "={{$json.message.text.split(' ')[1]}}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        112,
+        -160
+      ],
+      "id": "1deeb800-50dd-48d5-b02e-ed6abd944888",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1Vz5pm5-4u3g9BBjE9zOlXcHE9m1CePyuRRWYki0sshQ/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1Vz5pm5-4u3g9BBjE9zOlXcHE9m1CePyuRRWYki0sshQ/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Roll No",
+              "lookupValue": "={{$node[\"Telegram Trigger\"].json.message.text.split(\" \")[1]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        -160
+      ],
+      "id": "41ac82de-e7de-4795-9fcc-5b938e2f26d5",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MQoqy8HSHHh6MDLZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4caa87ff-39be-46fc-8a52-b216e63d627f",
+              "leftValue": "={{$json.Date}}",
+              "rightValue": "={{$now.format('dd-MM-yyyy')}}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -160
+      ],
+      "id": "658275d0-2041-45fa-b98c-33dfbf1274c6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "83d712d0-4a81-48df-a159-85f7f43412d2",
+              "leftValue": "={{$now.format('dd-MM-yyyy')}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        752,
+        -176
+      ],
+      "id": "5da39b8c-7e47-44b5-bc80-93113d541e20",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are an attendance assistant.\n\nReturn a clean formatted message for Telegram.\n\nFormat:\n\n📊 Attendance Report\n\n👤 Name: {{ $json['Student Name'] }}\n📌 Status: {{ $json.Attendance }}\n📅 Attendance: {{ $json['Session Attended out of Total Session'] }} OUT OF {{ $json['Total Session'] }}\nDate : {{ $json.Date }}\n\nAlso show attendance percentage.\nNow add a warning of \"Do not Bunk\" if attended session doesn't match total session"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        992,
+        -192
+      ],
+      "id": "aecbe24f-d5f5-4d79-82d1-4143d391ec6b",
+      "name": "OpenAi1",
+      "credentials": {
+        "openAiApi": {
+          "id": "LcZ37c58YXQQ5Eph",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output[0].content[0].text.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1328,
+        -192
+      ],
+      "id": "9a735257-b012-4fdf-a590-e9ef682f738a",
+      "name": "Send a text message",
+      "webhookId": "57f7b665-46e9-4bb0-ac65-cd0ee918c154",
+      "credentials": {
+        "telegramApi": {
+          "id": "ymrXmW3RCPH5jzF0",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "OpenAi1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAi1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "209796f4-3527-4ee7-b1c7-50580cc8a904",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bc25eb17d0313c3d899493fde00195e4702897a57f290a6a47481532dc6375aa"
+  },
+  "nodeGroups": [],
+  "id": "tOarI3wpaOVCfQfk",
+  "tags": []
+}
